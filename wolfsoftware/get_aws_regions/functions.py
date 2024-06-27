@@ -1,6 +1,5 @@
 """
-This module provides functionalities for retrieving and processing AWS region information
-with support for multiple AWS profiles.
+This module provides functionalities for retrieving and processing AWS region information with support for multiple AWS profiles.
 
 Capabilities:
   - Fetching a list of all AWS regions, with the option to include or exclude regions based on account opt-in status.
@@ -134,7 +133,10 @@ def _fetch_region_descriptions(region_names: List[str], profile_name: Optional[s
     descriptions: Dict = {}
 
     with ThreadPoolExecutor() as executor:
-        future_to_region: Dict[Future[Dict[str, str]], str] = {executor.submit(_fetch_region_description, region, profile_name): region for region in region_names}
+        future_to_region: Dict[Future[Dict[str, str]], str] = {
+            executor.submit(_fetch_region_description, region, profile_name): region
+            for region in region_names
+        }
 
         for future in as_completed(future_to_region):
             region: str = future_to_region[future]
