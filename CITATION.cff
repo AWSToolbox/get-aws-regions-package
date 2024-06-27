@@ -3,7 +3,7 @@ message: If you use this software, please cite it using these metadata.
 title: Get AWS Regions Package
 abstract: A simple package for retrieving a list of AWS regions.
 type: software
-version: 0.1.0
+version: 0.1.1
 date-released: 2024-06-27
 repository-code: https://github.com/AWSToolbox/get-aws-regions-package
 keywords:

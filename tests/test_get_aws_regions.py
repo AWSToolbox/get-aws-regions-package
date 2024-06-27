@@ -37,19 +37,18 @@ def test_version() -> None:
     assert version != 'unknown', f"Expected version, but got {version}"  # nosec: B101
 
 
-def test_get_region_list_all_regions(boto3_client_mock) -> None:
+def test_get_region_list_all_regions(boto3_session_mock) -> None:
     """
     Test fetching all regions with detailed information.
 
     Arguments:
-        boto3_client_mock (fixture): The mocked boto3 client.
+        boto3_session_mock (fixture): The mocked boto3 session.
     """
-    regions_mock: Any = boto3_client_mock.return_value
+    regions_mock: Any = boto3_session_mock.return_value.client.return_value
     regions_mock.describe_regions.return_value = {"Regions": mock_regions}
 
     result: List[Dict[str, str | bool]] | List[str] = get_region_list(details=True)
     result.sort(key=lambda x: x["RegionName"])  # Sort the result for consistent ordering
-    print("Filtered Regions with Details:", result)
 
     expected_result: List[Dict[str, str]] = [
         {"RegionName": "us-east-1", "OptInStatus": "opt-in-not-required", "GeographicalLocation": "US East (N. Virginia)"},
@@ -57,19 +56,18 @@ def test_get_region_list_all_regions(boto3_client_mock) -> None:
         {"RegionName": "eu-west-1", "OptInStatus": "opted-in", "GeographicalLocation": "EU West (Ireland)"}
     ]
     expected_result.sort(key=lambda x: x["RegionName"])  # Sort the expected result for consistent ordering
-    print("Expected Result:", expected_result)
 
     assert result == expected_result  # nosec: B101
 
 
-def test_get_region_list_include_filter(boto3_client_mock) -> None:
+def test_get_region_list_include_filter(boto3_session_mock) -> None:
     """
     Test fetching regions with an include filter.
 
     Arguments:
-        boto3_client_mock (fixture): The mocked boto3 client.
+        boto3_session_mock (fixture): The mocked boto3 session.
     """
-    regions_mock: Any = boto3_client_mock.return_value
+    regions_mock: Any = boto3_session_mock.return_value.client.return_value
 
     regions_mock.describe_regions.return_value = {"Regions": mock_regions}
 
@@ -85,14 +83,14 @@ def test_get_region_list_include_filter(boto3_client_mock) -> None:
     assert result == expected_result  # nosec: B101
 
 
-def test_get_region_list_exclude_filter(boto3_client_mock) -> None:
+def test_get_region_list_exclude_filter(boto3_session_mock) -> None:
     """
     Test fetching regions with an exclude filter.
 
     Arguments:
-        boto3_client_mock (fixture): The mocked boto3 client.
+        boto3_session_mock (fixture): The mocked boto3 session.
     """
-    regions_mock: Any = boto3_client_mock.return_value
+    regions_mock: Any = boto3_session_mock.return_value.client.return_value
 
     regions_mock.describe_regions.return_value = {"Regions": mock_regions}
 
@@ -108,14 +106,14 @@ def test_get_region_list_exclude_filter(boto3_client_mock) -> None:
     assert result == expected_result  # nosec: B101
 
 
-def test_get_region_list_no_details(boto3_client_mock) -> None:
+def test_get_region_list_no_details(boto3_session_mock) -> None:
     """
     Test fetching region names without details.
 
     Arguments:
-        boto3_client_mock (fixture): The mocked boto3 client.
+        boto3_session_mock (fixture): The mocked boto3 session.
     """
-    regions_mock: Any = boto3_client_mock.return_value
+    regions_mock: Any = boto3_session_mock.return_value.client.return_value
 
     regions_mock.describe_regions.return_value = {"Regions": mock_regions}
 
@@ -128,12 +126,12 @@ def test_get_region_list_no_details(boto3_client_mock) -> None:
     assert result == expected_result  # nosec: B101
 
 
-def test_get_region_list_exceptions(boto3_client_mock_with_exception) -> None:  # pylint: disable=unused-argument
+def test_get_region_list_exceptions(boto3_session_mock_with_exception) -> None:  # pylint: disable=unused-argument
     """
     Test exception handling when an error occurs in fetching regions.
 
     Arguments:
-        boto3_client_mock (fixture): The mocked boto3 client.
+        boto3_session_mock (fixture): The mocked boto3 session.
     """
     # Use pytest.raises to catch RegionListingError
     with pytest.raises(RegionListingError) as excinfo:
