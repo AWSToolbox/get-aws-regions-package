@@ -67,6 +67,7 @@ for all of the tools in our [AWS Toolbox](https://github.com/AWSToolbox).
     - `exclude_list`: Optional list of regions to exclude.
     - `all_regions`: Boolean flag to include all regions (default: True).
     - `details`: Boolean flag to return detailed information about each region (default: False).
+    - `profile_name`: String to specify the name of the profile to use.
   - Returns:
     - If `details=True`: Sorted list of dictionaries containing detailed region information.
     - If `details=False`: Sorted list of region names as strings.

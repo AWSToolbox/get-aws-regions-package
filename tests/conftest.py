@@ -2,18 +2,17 @@
 Configuration for pytest tests, including fixtures and mock data for testing the wolfsoftware.get-aws-regions package.
 
 Fixtures:
-- boto3_client_mock: Mocks the boto3 client for AWS interactions.
+- boto3_session_mock: Mocks the boto3 session for AWS interactions.
+- boto3_session_mock_with_exception: Mocks the boto3 session raising an exception during describe_regions.
 
 Mock Data:
 - mock_regions: A list of dictionaries representing mock AWS regions.
 - mock_description: A dictionary representing the mock description of a specific AWS region.
 """
-from typing import Any, Dict, Generator, List, Union
 
-from unittest.mock import AsyncMock, MagicMock, patch
-
+from typing import Any, Dict, Generator, List
+from unittest.mock import MagicMock, patch
 import pytest
-
 
 # Mock data
 mock_regions: List[Dict[str, str]] = [
@@ -30,14 +29,16 @@ mock_description: Dict[str, str] = {
 
 
 @pytest.fixture
-def boto3_client_mock(mock_exception: Union[Exception, None] = None) -> Generator[Union[MagicMock, AsyncMock], Any, None]:
+def boto3_session_mock() -> Generator[MagicMock, None, None]:
     """
-    Fixture to mock the boto3 client.
+    Fixture to mock the boto3 session.
 
     Yields:
-        MagicMock: A mock of the boto3 client.
+        MagicMock: A mock of the boto3 session.
     """
-    with patch("boto3.client") as mock_client:
+    with patch("boto3.Session") as mock_session:
+        mock_session_instance: Any = mock_session.return_value
+
         regions_mock = MagicMock()
         ssm_mock = MagicMock()
 
@@ -47,27 +48,25 @@ def boto3_client_mock(mock_exception: Union[Exception, None] = None) -> Generato
             raise ValueError(f"Unknown parameter name: {Name}")
 
         ssm_mock.get_parameter.side_effect = mock_get_parameter
-        mock_client.side_effect = lambda service_name, *args, **kwargs: ssm_mock if service_name == "ssm" else regions_mock
 
-        # Conditionally set side effect for describe_regions based on mock_exception
-        if mock_exception:
-            print("HERE")
-            regions_mock.describe_regions.side_effect = mock_exception
-        regions_mock.describe_regions.side_effect = mock_exception
+        mock_session_instance.client.side_effect = lambda service_name, *args, **kwargs: ssm_mock if service_name == "ssm" else regions_mock
+
         regions_mock.describe_regions.return_value = {"Regions": mock_regions}
 
-        yield mock_client
+        yield mock_session
 
 
 @pytest.fixture
-def boto3_client_mock_with_exception() -> Generator[MagicMock, None, None]:
+def boto3_session_mock_with_exception() -> Generator[MagicMock, None, None]:
     """
-    Fixture to mock the boto3 client raising an exception during describe_regions.
+    Fixture to mock the boto3 session raising an exception during describe_regions.
 
     Yields:
-        MagicMock: A mock of the boto3 client.
+        MagicMock: A mock of the boto3 session.
     """
-    with patch("boto3.client") as mock_client:
+    with patch("boto3.Session") as mock_session:
+        mock_session_instance: Any = mock_session.return_value
+
         regions_mock = MagicMock()
         ssm_mock = MagicMock()
 
@@ -80,6 +79,6 @@ def boto3_client_mock_with_exception() -> Generator[MagicMock, None, None]:
 
         regions_mock.describe_regions.side_effect = Exception("Test Exception")
 
-        mock_client.side_effect = lambda service_name, *args, **kwargs: ssm_mock if service_name == "ssm" else regions_mock
+        mock_session_instance.client.side_effect = lambda service_name, *args, **kwargs: ssm_mock if service_name == "ssm" else regions_mock
 
-        yield mock_client
+        yield mock_session
