@@ -214,6 +214,5 @@ def get_region_list(
         region_descriptions: Dict[str, str] = _fetch_region_descriptions(region_names, profile_name)
         for region in filtered_regions:
             region['GeographicalLocation'] = region_descriptions.get(region['RegionName'], "Unknown")
-        print("Filtered Regions with Details:", filtered_regions)  # Debug print
         return filtered_regions
     return [region['RegionName'] for region in filtered_regions]
